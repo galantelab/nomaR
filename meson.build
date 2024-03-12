@@ -2,7 +2,7 @@ project(
   'nomaR', 'c',
           version : '0.1.0',
           license : 'GPL3',
-    meson_version : '>= 0.48.0',
+    meson_version : '>= 0.56.0',
   default_options : ['c_std=c99']
 )
 
@@ -73,11 +73,11 @@ cc = meson.get_compiler('c')
 # Math library portably
 m_dep = cc.find_library('m', required : false)
 
-# The following dependencies, if not found in the host, will be
-# downloaded and statically linked
-
 # Zlib
-zlib_dep = dependency('zlib', fallback : ['zlib', 'zlib_dep'])
+zlib_dep = dependency('zlib')
+
+# HDF5
+hdf5_dep = dependency('hdf5', language: 'c')
 
 # Libcheck framework is used for testing, so it is not
 # required for building and installing
@@ -87,6 +87,7 @@ check_dep = dependency('check', version : '>= 0.15.0', required : false)
 deps = [
   config_dep,
   zlib_dep,
+  hdf5_dep,
   m_dep
 ]
 
