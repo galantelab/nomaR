@@ -1,6 +1,8 @@
 nomar_sources = files(
   'aa.c',
-  'aa.h'
+  'aa.h',
+  'k_mer.c',
+  'k_mer.h'
 )
 
 # Static library necessary for
