@@ -10,7 +10,7 @@ main (void)
 
 	// Create runner
 	sr = srunner_create (make_example_suite ());
-	/*srunner_add_suite (sr, make_example_suite ());*/
+	srunner_add_suite (sr, make_aa_suite ());
 	srunner_set_tap (sr, "-");
 
 	srunner_run_all (sr, CK_NORMAL);
