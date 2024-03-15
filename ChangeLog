@@ -1,3 +1,17 @@
+2024-03-15 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add src/gz.[ch] and sugar libraries from sideRETRO
+
+2024-03-14 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add src/k_mer.[ch]: Read a seq into k-mer's
+	* Add src/aa.[ch]: Manage aa's and get their indexes
+
+2024-03-12 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add meson.build: hdf5 dep and remove zlib fallback
+	* Fix tests/meson.build: Add example to test_sources
+
 2024-03-11 Thiago L. A. Miller <tmiller@mochsl.org.br>
 
 	* Version 0.1.0

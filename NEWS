@@ -1,3 +1,18 @@
+Version 0.2.0
+
+* Set project to compile with 'zlib' and 'hdf5'.
+
+* Include some sugar libraries from sideRETRO:
+  'wrapper.c';
+  'utils.c';
+  'gz.c'.
+
+* Manage sequence of amino acid residues and
+  assign an integer value to each one.
+
+* K-mer iterator which works as a sliding moving
+  window over amino acid sequences.
+
 Version 0.1.0
 
 * Initial version. Project was set to work with
