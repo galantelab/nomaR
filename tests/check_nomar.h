@@ -4,5 +4,8 @@
 Suite * make_example_suite (void);
 Suite * make_aa_suite      (void);
 Suite * make_k_mer_suite   (void);
+Suite * make_utils_suite   (void);
+Suite * make_wrapper_suite (void);
+Suite * make_gz_suite      (void);
 
 #endif /* check_nomar.h */

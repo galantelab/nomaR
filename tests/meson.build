@@ -2,8 +2,11 @@ test_sources = files(
   'check_nomar.h',
   'check_nomar_aa.c',
   'check_nomar_example.c',
+  'check_nomar_gz.c',
   'check_nomar_k_mer.c',
-  'check_nomar_main.c'
+  'check_nomar_main.c',
+  'check_nomar_utils.c',
+  'check_nomar_wrapper.c'
 )
 
 # Package executable tester
