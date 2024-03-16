@@ -40,27 +40,27 @@ k_mer_iter_init (KMerIter *iter, const char *seq, int k)
 	};
 }
 
-int
+KMerPos
 k_mer_iter_next (KMerIter *iter, char *k_mer)
 {
 	assert (iter != NULL);
 
 	RealIter *ri = (RealIter *) iter;
-	int rc = 0;
+	KMerPos rc = K_MER_END;
 
 	if (ri->x < ri->k)
 		{
 			if (k_mer != NULL)
 				SAFE_COPY (k_mer, &ri->seq[0], ri->x);
 			ri->x++;
-			rc = 1;
+			rc = K_MER_LEFT_EDGE;
 		}
 	else if (ri->y < (ri->seq_len - ri->k + 1))
 		{
 			if (k_mer != NULL)
 				SAFE_COPY (k_mer, &ri->seq[ri->y], ri->k);
 			ri->y++;
-			rc = 1;
+			rc = K_MER_INTERNAL;
 		}
 	else if (ri->z > 0)
 		{
@@ -68,7 +68,7 @@ k_mer_iter_next (KMerIter *iter, char *k_mer)
 				SAFE_COPY (k_mer,
 						&ri->seq[ri->seq_len - ri->z], ri->z);
 			ri->z--;
-			rc = 1;
+			rc = K_MER_RIGHT_EDGE;
 		}
 
 	return rc;

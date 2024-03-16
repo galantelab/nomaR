@@ -34,22 +34,57 @@ END_TEST
 START_TEST (test_k_mer_iter_next)
 {
 	char seq[] = "ABCDEFGHIJ";
-	char *k_mers[] = {
-		"A", "AB", "ABC", "ABCD",
-		"ABCDE", "BCDEF", "CDEFG",
-		"DEFGH", "EFGHI", "FGHIJ",
+
+	char *k_mers_left[] = {
+		"A", "AB", "ABC", "ABCD"
+	};
+
+	char *k_mers_right[] = {
 		"GHIJ", "HIJ", "IJ", "J"
 	};
 
-	int i = 0;
+	char *k_mers_internal[] = {
+		"ABCDE", "BCDEF", "CDEFG",
+		"DEFGH", "EFGHI", "FGHIJ"
+	};
+
+	int x = 0;
+	int y = 0;
+	int z = 0;
 	int k = 5;
 	char k_mer[k + 1] = {};
 
+	KMerPos pos;
 	KMerIter iter;
+
 	k_mer_iter_init (&iter, seq, k);
 
-	while (k_mer_iter_next (&iter, k_mer))
-		ck_assert_str_eq (k_mer, k_mers[i++]);
+	while ((pos = k_mer_iter_next (&iter, k_mer)))
+		{
+			switch (pos)
+				{
+				case K_MER_LEFT_EDGE:
+					{
+						ck_assert_str_eq (k_mer, k_mers_left[x++]);
+						break;
+					}
+				case K_MER_RIGHT_EDGE:
+					{
+						ck_assert_str_eq (k_mer, k_mers_right[y++]);
+						break;
+					}
+				case K_MER_INTERNAL:
+					{
+						ck_assert_str_eq (k_mer, k_mers_internal[z++]);
+						break;
+					}
+				case K_MER_END:
+					{
+						ck_abort_msg ("Why am I here?");
+						break;
+					}
+				}
+		}
 }
 END_TEST
 
