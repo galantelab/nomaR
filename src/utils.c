@@ -78,3 +78,19 @@ buf_expand (void **buf, size_t size,
 			size * (final_nmemb - old_nmemb));
 	return final_nmemb;
 }
+
+unsigned int
+powu (unsigned int base, unsigned int exp)
+{
+	unsigned int result = 1;
+
+	while (exp)
+		{
+			if (exp % 2)
+				result *= base;
+			exp /= 2;
+			base *= base;
+		}
+
+	return result;
+}

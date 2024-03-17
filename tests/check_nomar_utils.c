@@ -75,6 +75,23 @@ START_TEST (test_buf_expand)
 }
 END_TEST
 
+START_TEST (test_powu)
+{
+	int base[] = {0, 1, 2};
+
+	int result[][10] = {
+		{1, 0, 0, 0,  0,  0,  0,   0,   0,   0},
+		{1, 1, 1, 1,  1,  1,  1,   1,   1,   1},
+		{1, 2, 4, 8, 16, 32, 64, 128, 256, 512},
+	};
+
+	int i, j;
+
+	for (i = 0; i < sizeof (base) / sizeof (int); i++)
+		for (j = 0; j < sizeof (result) / sizeof (base); j++)
+			ck_assert_int_eq (powu (base[i], j), result[i][j]);
+}
+
 Suite *
 make_utils_suite (void)
 {
@@ -90,6 +107,7 @@ make_utils_suite (void)
 	tcase_add_test (tc_core, test_trimc);
 	tcase_add_test (tc_core, test_trim);
 	tcase_add_test (tc_core, test_buf_expand);
+	tcase_add_test (tc_core, test_powu);
 
 	suite_add_tcase (s, tc_core);
 
