@@ -1,6 +1,8 @@
 nomar_sources = files(
   'aa.c',
   'aa.h',
+  'aa_k_mer.c',
+  'aa_k_mer.h',
   'gz.c',
   'gz.h',
   'k_mer.c',
