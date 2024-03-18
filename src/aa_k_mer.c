@@ -17,6 +17,22 @@ aa_k_mer_edge_correction (int i, int n)
 }
 
 unsigned int
+aa_k_mer_get_total (int k)
+{
+	assert (k > 0);
+	return powu (AA_LEN, k);
+}
+
+unsigned int
+aa_k_mer_get_pos_corrected_total (int k)
+{
+	assert (k > 0);
+	return
+		powu (AA_LEN, k) +
+		2 * aa_k_mer_edge_correction (1, k - 1);
+}
+
+unsigned int
 aa_k_mer_get_index (const char *k_mer, int k)
 {
 	assert (k_mer != NULL);

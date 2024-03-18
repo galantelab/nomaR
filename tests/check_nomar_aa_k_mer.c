@@ -24,6 +24,40 @@ START_TEST (test_aa_k_mer_get_pos_corrected_index_fail2)
 	aa_k_mer_get_pos_corrected_index ("AAA", 0, 1);
 }
 
+START_TEST (test_aa_k_mer_get_total_fail)
+{
+	aa_k_mer_get_total (0);
+}
+
+START_TEST (test_aa_k_mer_get_pos_corrected_total_fail)
+{
+	aa_k_mer_get_pos_corrected_total (0);
+}
+
+START_TEST (test_aa_k_mer_get_total)
+{
+	int i = 0;
+	int total[] = {
+		20, 400, 8000
+	};
+
+	for (; i < sizeof (total) / sizeof (int); i++)
+		ck_assert_int_eq (aa_k_mer_get_total (i + 1), total[i]);
+}
+END_TEST
+
+START_TEST (test_aa_k_mer_get_pos_corrected_total)
+{
+	int i = 0;
+	int total[] = {
+		20, 440, 8840
+	};
+
+	for (; i < sizeof (total) / sizeof (int); i++)
+		ck_assert_int_eq (aa_k_mer_get_pos_corrected_total (i + 1), total[i]);
+}
+END_TEST
+
 START_TEST (test_aa_k_mer_get_index)
 {
 	int i = 0;
@@ -126,8 +160,18 @@ make_aa_k_mer_suite (void)
 	/* Abort test case */
 	tc_abort = tcase_create ("Abort");
 
+	tcase_add_test (tc_core, test_aa_k_mer_get_total);
+	tcase_add_test (tc_core, test_aa_k_mer_get_pos_corrected_total);
 	tcase_add_test (tc_core, test_aa_k_mer_get_index);
 	tcase_add_test (tc_core, test_aa_k_mer_get_pos_corrected_index);
+
+	tcase_add_test_raise_signal (tc_abort,
+			test_aa_k_mer_get_total_fail,
+			SIGABRT);
+
+	tcase_add_test_raise_signal (tc_abort,
+			test_aa_k_mer_get_pos_corrected_total_fail,
+			SIGABRT);
 
 	tcase_add_test_raise_signal (tc_abort,
 			test_aa_k_mer_get_index_fail1,
