@@ -79,10 +79,10 @@ buf_expand (void **buf, size_t size,
 	return final_nmemb;
 }
 
-unsigned int
-powu (unsigned int base, unsigned int exp)
+uint32_t
+powu (uint32_t base, uint32_t exp)
 {
-	unsigned int result = 1;
+	uint32_t result = 1;
 
 	while (exp)
 		{
