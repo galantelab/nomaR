@@ -1,6 +1,22 @@
+2024-03-19 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add src/count_k_mer.[ch]: Count k-mer freq
+	* Change src/aa_k_mer.[ch], utils.[ch]: Use uint32_t
+
+2024-03-17 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add src/aa_k_mer.[ch] (total): Count total k-mers
+	* Add src/aa_k_mer.[ch]: Calc aa k_mer index
+	* Add src/utils.[ch] (powu): pow() like for int
+
+2024-03-16 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add src/k_mer.[ch]: enum KMerPos
+
 2024-03-15 Thiago L. A. Miller <tmiller@mochsl.org.br>
 
 	* Add src/gz.[ch] and sugar libraries from sideRETRO
+	* Version 0.2.0
 
 2024-03-14 Thiago L. A. Miller <tmiller@mochsl.org.br>
 
