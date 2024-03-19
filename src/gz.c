@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <error.h>
-#include <errno.h>
 
 #include "wrapper.h"
 #include "utils.h"
+#include "log.h"
 #include "gz.h"
 
 GzFile *
@@ -19,8 +18,7 @@ gz_open_for_reading (const char *path)
 	gz->fp = gzopen (path, "rb");
 
 	if (gz->fp == NULL)
-		error (EXIT_FAILURE, errno,
-				"Could not open '%s' for reading", path);
+		log_errno_fatal ("Could not open '%s' for reading", path);
 
 	gz->filename = xstrdup (path);
 	gz->buf = xcalloc (BUFSIZ, sizeof (char));
@@ -39,8 +37,7 @@ gz_close (GzFile *gz)
 
 	rc = gzclose (gz->fp);
 	if (rc != Z_OK)
-		error (EXIT_FAILURE, 0,
-				"Could not close file '%s': %s", gz->filename,
+		log_fatal ("Could not close file '%s': %s", gz->filename,
 				gzerror (gz->fp, &rc));
 
 	xfree (gz->buf);
@@ -58,8 +55,7 @@ gz_check_error (const GzFile *gz)
 
 	err_msg = gzerror (gz->fp, &rc);
 	if (rc != Z_OK)
-		error (EXIT_FAILURE, 0,
-				"Could not read entry from '%s': %s",
+		log_fatal ("Could not read entry from '%s': %s",
 				gz->filename, err_msg);
 }
 

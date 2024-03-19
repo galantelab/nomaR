@@ -1,7 +1,6 @@
 #include <string.h>
-#include <error.h>
-#include <errno.h>
 
+#include "log.h"
 #include "wrapper.h"
 
 char *
@@ -10,8 +9,7 @@ xstrdup (const char *str)
 	char *ret = strdup (str);
 
 	if (ret == NULL)
-		error (EXIT_FAILURE, errno,
-				"strdup failed");
+		log_errno_fatal ("strdup failed");
 
 	return ret;
 }
@@ -25,8 +23,7 @@ xmalloc (size_t size)
 		ret = malloc (1);
 
 	if (ret == NULL)
-		error (EXIT_FAILURE, errno,
-				"malloc failed");
+		log_errno_fatal ("malloc failed");
 
 	return ret;
 }
@@ -40,8 +37,7 @@ xcalloc (size_t nmemb, size_t size)
 		ret = calloc (1, 1);
 
 	if (ret == NULL)
-		error (EXIT_FAILURE, errno,
-				"calloc failed");
+		log_errno_fatal ("calloc failed");
 
 	return ret;
 }
@@ -55,8 +51,7 @@ xrealloc (void *ptr, size_t size)
 		ret = realloc (ret, 1);
 
 	if (ret == NULL)
-		error (EXIT_FAILURE, errno,
-				"realloc failed");
+		log_errno_fatal ("realloc failed");
 
 	return ret;
 }

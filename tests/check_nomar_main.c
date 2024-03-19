@@ -1,10 +1,13 @@
-#include <stdlib.h>
 #include <check.h>
 #include "check_nomar.h"
+
+#include "../src/log.h"
 
 int
 main (void)
 {
+	log_set_quiet (1);
+
 	int number_failed = 0;
 	SRunner *sr = NULL;
 

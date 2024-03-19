@@ -9,6 +9,8 @@ nomar_sources = files(
   'gz.h',
   'k_mer.c',
   'k_mer.h',
+  'log.c',
+  'log.h',
   'utils.c',
   'utils.h',
   'wrapper.c',

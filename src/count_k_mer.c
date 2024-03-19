@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <error.h>
 #include <assert.h>
 
 #include "aa_k_mer.h"

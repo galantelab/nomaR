@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include "check_nomar.h"
 
 #include "../src/wrapper.h"
@@ -153,8 +154,9 @@ make_gz_suite (void)
 	tcase_add_test (tc_core, test_read2);
 	tcase_add_test (tc_core, test_read_long_line);
 
-	tcase_add_exit_test (tc_abort,
-			test_open_fatal,  EXIT_FAILURE);
+	tcase_add_test_raise_signal (tc_abort,
+			test_open_fatal,
+			SIGABRT);
 
 	suite_add_tcase (s, tc_core);
 	suite_add_tcase (s, tc_abort);
