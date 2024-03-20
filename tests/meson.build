@@ -5,6 +5,7 @@ test_sources = files(
   'check_nomar_count_k_mer.c',
   'check_nomar_example.c',
   'check_nomar_gz.c',
+  'check_nomar_h5.c',
   'check_nomar_k_mer.c',
   'check_nomar_main.c',
   'check_nomar_utils.c',

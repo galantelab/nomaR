@@ -20,6 +20,7 @@ main (void)
 	srunner_add_suite (sr, make_gz_suite ());
 	srunner_add_suite (sr, make_aa_k_mer_suite ());
 	srunner_add_suite (sr, make_count_k_mer_suite ());
+	srunner_add_suite (sr, make_h5_suite ());
 	srunner_set_tap (sr, "-");
 
 	srunner_run_all (sr, CK_ENV);
