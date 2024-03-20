@@ -11,6 +11,10 @@
 #include <getopt.h>
 #include <assert.h>
 
+#include "log.h"
+#include "utils.h"
+#include "train.h"
+
 static void
 print_version (FILE *fp)
 {
@@ -90,17 +94,26 @@ Exit:
 	return rc;
 }
 
+static void
+set_log (void)
+{
+	if (!is_terminal (fileno (stderr)))
+		log_set_color (0);
+}
+
 int
 main (int argc, char *argv[])
 {
 	int rc = EXIT_SUCCESS;
+
+	set_log ();
 
 	if (argc == 1)
 		print_usage (stdout);
 	else if (argv[1][0] == '-')
 		rc = parse_no_command_opt (argc, argv);
 	else if (!strcmp (argv[1], "train"))
-		printf ("Call 'train' command. Not ready yet!\n");
+		rc = parse_train_command_opt (argc, argv);
 	else if (!strcmp (argv[1], "test"))
 		printf ("Call 'test' command. Not ready yet!\n");
 	else
