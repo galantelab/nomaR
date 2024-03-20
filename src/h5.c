@@ -268,3 +268,27 @@ h5_create (const char *file, uint32_t x_len, uint32_t y_len)
 
 	return h5;
 }
+
+void
+h5_write_count_dataset (H5 *h5, uint32_t *data)
+{
+	herr_t status;
+
+	status = H5Dwrite (h5->dataset_count_id, h5->datatype_int_id,
+		H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
+	if (status < 0)
+		log_fatal ("H5Dwrite: Error writing to dataset '/count'");
+}
+
+void
+h5_write_label_dataset (H5 *h5, const char **data)
+{
+	herr_t status;
+
+	status = H5Dwrite (h5->dataset_label_id, h5->datatype_str_id,
+		H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
+	if (status < 0)
+		log_fatal ("H5Dwrite: Error writing to dataset '/label'");
+}
