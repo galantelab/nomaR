@@ -13,4 +13,7 @@ size_t buf_expand (void **buf, size_t size,
 
 uint32_t powu (uint32_t base, uint32_t exp);
 
+int exists      (const char *file);
+int is_terminal (int fd);
+
 #endif /* utils.h */

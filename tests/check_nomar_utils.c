@@ -1,5 +1,7 @@
 #include <check.h>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "check_nomar.h"
 
 #include "../src/wrapper.h"
@@ -92,6 +94,28 @@ START_TEST (test_powu)
 			ck_assert_int_eq (powu (base[i], j), result[i][j]);
 }
 
+START_TEST (test_exists)
+{
+	char file[] = "/tmp/ponga";
+	FILE *fp = NULL;
+
+	fp = fopen (file, "w");
+	fprintf (fp, "PONGA\n");
+	fclose (fp);
+
+	ck_assert_int_eq (exists (file), 1);
+	ck_assert_int_eq (exists ("pongatrongaflofa"), 0);
+
+	unlink (file);
+}
+END_TEST
+
+START_TEST (test_is_terminal)
+{
+	ck_assert_int_eq (is_terminal (fileno (stderr)), 0);
+}
+END_TEST
+
 Suite *
 make_utils_suite (void)
 {
@@ -108,6 +132,8 @@ make_utils_suite (void)
 	tcase_add_test (tc_core, test_trim);
 	tcase_add_test (tc_core, test_buf_expand);
 	tcase_add_test (tc_core, test_powu);
+	tcase_add_test (tc_core, test_exists);
+	tcase_add_test (tc_core, test_is_terminal);
 
 	suite_add_tcase (s, tc_core);
 

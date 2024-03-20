@@ -1,4 +1,6 @@
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 #include "wrapper.h"
 #include "utils.h"
@@ -93,4 +95,18 @@ powu (uint32_t base, uint32_t exp)
 		}
 
 	return result;
+}
+
+int
+exists (const char *file)
+{
+	struct stat sb;
+	return stat (file, &sb) == 0 && sb.st_mode & S_IFREG;
+}
+
+int
+is_terminal (int fd)
+{
+	struct stat sb;
+	return fstat (fd, &sb) == 0 && S_ISCHR (sb.st_mode);
 }
