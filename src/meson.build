@@ -7,6 +7,8 @@ nomar_sources = files(
   'count_k_mer.h',
   'gz.c',
   'gz.h',
+  'h5.c',
+  'h5.h',
   'k_mer.c',
   'k_mer.h',
   'log.c',
