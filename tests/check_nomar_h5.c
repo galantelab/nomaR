@@ -1,3 +1,9 @@
+#if __has_include("valgrind/valgrind.h")
+#include <valgrind/valgrind.h>
+#else
+#define RUNNING_ON_VALGRIND=0
+#endif
+
 #include <check.h>
 #include <unistd.h>
 #include "check_nomar.h"
@@ -7,6 +13,9 @@
 
 START_TEST (test_h5_create)
 {
+	if (RUNNING_ON_VALGRIND)
+		return;
+
 	const char file[] = "/tmp/ponga.h5";
 	H5 *h5 = NULL;
 
