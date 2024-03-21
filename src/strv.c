@@ -64,6 +64,18 @@ strv_builder_add (StrvBuilder *b, const char *value)
 }
 
 void
+strv_builder_add_unique (StrvBuilder *b, const char *value)
+{
+	assert (b != NULL);
+
+	if (value == NULL)
+		return;
+
+	if (!strv_contains ((const char * const *) b->strv, value, NULL))
+		strv_builder_add (b, value);
+}
+
+void
 strv_free (char **strv)
 {
 	if (strv == NULL)

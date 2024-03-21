@@ -69,6 +69,23 @@ START_TEST (test_strv_contains)
 }
 END_TEST
 
+START_TEST (test_strv_builder_add_unique)
+{
+	StrvBuilder *b;
+	char **strv = NULL;
+
+	b = strv_builder_new ();
+
+	strv_builder_add_unique (b, "ponga");
+	strv_builder_add_unique (b, "ponga");
+	strv_builder_add_unique (b, "ponga");
+
+	strv = strv_builder_end (b);
+	ck_assert_int_eq (strv_length (strv), 1);
+	strv_free (strv);
+}
+END_TEST
+
 START_TEST (test_strv_contains_fail)
 {
 	strv_contains (NULL, "ponga", NULL);
@@ -92,6 +109,7 @@ make_strv_suite (void)
 
 	tcase_add_test (tc_core, test_strv_builder_new);
 	tcase_add_test (tc_core, test_strv_builder_add);
+	tcase_add_test (tc_core, test_strv_builder_add_unique);
 	tcase_add_test (tc_core, test_strv_contains);
 
 	tcase_add_test_raise_signal (tc_abort,
