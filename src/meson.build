@@ -13,6 +13,8 @@ nomar_sources = files(
   'k_mer.h',
   'log.c',
   'log.h',
+  'strv.c',
+  'strv.h',
   'train.c',
   'train.h',
   'utils.c',

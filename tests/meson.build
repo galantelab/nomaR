@@ -8,6 +8,7 @@ test_sources = files(
   'check_nomar_h5.c',
   'check_nomar_k_mer.c',
   'check_nomar_main.c',
+  'check_nomar_strv.c',
   'check_nomar_utils.c',
   'check_nomar_wrapper.c'
 )
