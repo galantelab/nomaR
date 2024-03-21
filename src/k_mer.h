@@ -1,6 +1,8 @@
 #ifndef K_MER_H
 #define K_MER_H
 
+#include <stdlib.h>
+
 enum _KMerPos
 {
 	K_MER_END = 0,
@@ -13,17 +15,17 @@ typedef enum _KMerPos KMerPos;
 
 struct _KMerIter
 {
-	int    dummy1;
-	void * dummy2;
-	int    dummy3;
-	int    dummy4;
-	int    dummy5;
-	int    dummy6;
+	size_t    dummy1;
+	void    * dummy2;
+	size_t    dummy3;
+	size_t    dummy4;
+	size_t    dummy5;
+	size_t    dummy6;
 };
 
 typedef struct _KMerIter KMerIter;
 
-void     k_mer_iter_init (KMerIter *iter, const char *seq, int k);
+void     k_mer_iter_init (KMerIter *iter, const char *seq, size_t k);
 KMerPos  k_mer_iter_next (KMerIter *iter, char *k_mer);
 
 #endif /* k_mer.h */

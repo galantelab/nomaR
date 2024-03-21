@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -15,23 +14,23 @@ struct _CountKMer
 	GzFile      *gz;
 	const char  *file;
 	const char **label;
-	int          num_label;
-	int          k;
+	size_t       num_label;
+	size_t       k;
 };
 
 typedef struct _CountKMer CountKMer;
 
 static Count *
-count_new (int k, int num_label)
+count_new (size_t k, size_t num_label)
 {
 	Count *c = NULL;
-	uint32_t *data = NULL;
-	uint32_t y_len = 0;
+	size_t *data = NULL;
+	size_t y_len = 0;
 
 	y_len = aa_k_mer_get_pos_corrected_total (k);
 
 	c = xcalloc (1, sizeof (Count));
-	data = xcalloc (y_len * num_label, sizeof (uint32_t));
+	data = xcalloc (y_len * num_label, sizeof (size_t));
 
 	*c = (Count) {
 		.x_len = num_label,
@@ -53,11 +52,11 @@ count_free (Count *c)
 }
 
 static inline void
-count_process_k_mer (CountKMer *ck, int x, const char *seq)
+count_process_k_mer (CountKMer *ck, size_t x, const char *seq)
 {
 	KMerIter iter = {};
 	KMerPos pos = 0;
-	uint32_t y = 0;
+	size_t y = 0;
 	char k_mer[ck->k + 1];
 
 	k_mer_iter_init (&iter, seq, ck->k);
@@ -70,9 +69,9 @@ count_process_k_mer (CountKMer *ck, int x, const char *seq)
 }
 
 static inline int
-count_get_label_index (CountKMer *ck, const char *class, int *x)
+count_get_label_index (CountKMer *ck, const char *class, size_t *x)
 {
-	int i = 0;
+	size_t i = 0;
 
 	for (; i < ck->num_label; i++)
 		{
@@ -89,12 +88,14 @@ count_get_label_index (CountKMer *ck, const char *class, int *x)
 static inline void
 count_process_data (CountKMer *ck)
 {
-	int x = 0;
 	size_t num_line = 0;
 	char *line = NULL;
+
 	const char *class = NULL;
 	const char *seq = NULL;
 	char *saveptr = NULL;
+
+	size_t x = 0;
 
 	while (gz_getline (ck->gz, &line, &num_line))
 		{
@@ -113,7 +114,7 @@ count_process_data (CountKMer *ck)
 }
 
 Count *
-count_k_mer (const char *file, const char **label, int num_label, int k)
+count_k_mer (const char *file, const char **label, size_t num_label, size_t k)
 {
 	assert (file != NULL);
 	assert (label != NULL && *label != NULL);

@@ -5,10 +5,10 @@
 #include "aa.h"
 #include "aa_k_mer.h"
 
-static inline uint32_t
-aa_k_mer_edge_correction (int i, int n)
+static inline size_t
+aa_k_mer_edge_correction (size_t i, size_t n)
 {
-	uint32_t addend = 0;
+	size_t addend = 0;
 
 	for (; i <= n; i++)
 		addend += powu (AA_LEN, i);
@@ -16,15 +16,15 @@ aa_k_mer_edge_correction (int i, int n)
 	return addend;
 }
 
-uint32_t
-aa_k_mer_get_total (int k)
+size_t
+aa_k_mer_get_total (size_t k)
 {
 	assert (k > 0);
 	return powu (AA_LEN, k);
 }
 
-uint32_t
-aa_k_mer_get_pos_corrected_total (int k)
+size_t
+aa_k_mer_get_pos_corrected_total (size_t k)
 {
 	assert (k > 0);
 	return
@@ -32,14 +32,14 @@ aa_k_mer_get_pos_corrected_total (int k)
 		2 * aa_k_mer_edge_correction (1, k - 1);
 }
 
-uint32_t
-aa_k_mer_get_index (const char *k_mer, int k)
+size_t
+aa_k_mer_get_index (const char *k_mer, size_t k)
 {
 	assert (k_mer != NULL);
 	assert (k > 0);
 
-	uint32_t index = 0;
-	int i = 0;
+	size_t index = 0;
+	size_t i = 0;
 
 	for (; i < k; i++)
 		index += aa_get_sym1_index (k_mer[i])
@@ -48,14 +48,14 @@ aa_k_mer_get_index (const char *k_mer, int k)
 	return index;
 }
 
-uint32_t
-aa_k_mer_get_pos_corrected_index (const char *k_mer, int k, KMerPos pos)
+size_t
+aa_k_mer_get_pos_corrected_index (const char *k_mer, size_t k, KMerPos pos)
 {
 	assert (k_mer != NULL);
 	assert (k > 0);
 
-	uint32_t index = 0;
-	int cur_k = strlen (k_mer);
+	size_t index = 0;
+	size_t cur_k = strlen (k_mer);
 
 	index = aa_k_mer_get_index (k_mer, cur_k);
 

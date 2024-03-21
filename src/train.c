@@ -11,7 +11,10 @@
 #include <assert.h>
 
 #include "log.h"
+#include "gz.h"
+#include "aa.h"
 #include "utils.h"
+#include "wrapper.h"
 #include "train.h"
 
 #define DEFAULT_PREFIX "out"
@@ -26,10 +29,90 @@ struct _Train
 
 typedef struct _Train Train;
 
+static int
+get_class_list_and_validate_seq (const char *file, int k, char ***list)
+{
+#define LIST_ALLOC 8
+
+	assert (file != NULL);
+	assert (list != NULL);
+
+	GzFile *gz = NULL;
+
+	size_t num_line = 0;
+	char *line = NULL;
+	char *saveptr = NULL;
+
+	int num_class = 0;
+	int alloc = 0;
+	const char *class = NULL;
+	const char *seq = NULL;
+
+	gz = gz_open_for_reading (file);
+
+	while (gz_getline (gz, &line, &num_line))
+		{
+			line = chomp (line);
+
+			class = strtok_r (line, "\t ", &saveptr);
+			seq = strtok_r (NULL, "\t ", &saveptr);
+
+			if (class == NULL)
+				continue;
+
+			if (seq == NULL)
+				{
+					log_warn ("CLASS (%s) has no SEQ at line %zu",
+							class, num_line);
+					continue;
+				}
+
+			if (!aa_check (seq))
+				log_fatal (
+						"CLASS (%s) SEQ (%s) does not seem "
+						"to be an amino acid at line %zu",
+						class, seq, num_line);
+
+			if (strlen (seq) < k)
+				{
+					log_warn (
+							"CLASS (%s) SEQ (%s) length is "
+							"smaller than the size of the "
+							"k-mer (%d) at line %zu",
+							class, seq, k, num_line);
+					continue;
+				}
+
+			if (alloc <= num_class)
+				alloc = buf_expand ((void *) *list, sizeof (char *),
+						alloc, LIST_ALLOC);
+
+			/*if (!linear_str_search ((const char **) *list, num_class, class, NULL))*/
+				/**list[num_class++] = xstrdup (class);*/
+		}
+
+	if (alloc > num_class)
+		*list = xrealloc (*list, sizeof (char *) * num_class);
+
+	xfree (line);
+	gz_close (gz);
+
+#undef LIST_ALLOC
+	return num_class;
+}
+
 static void
 run (Train *t)
 {
-	log_warn ("Under construction");
+	int num_class = 0;
+	char **list = NULL;
+
+	log_info ("Validating file '%s'", t->file);
+	num_class = get_class_list_and_validate_seq (t->file, t->k, &list);
+
+	if (num_class == 0)
+		log_fatal ("Empty file '%s' or no valid entry found",
+				t->file);
 }
 
 static void

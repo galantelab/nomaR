@@ -14,5 +14,6 @@ typedef struct _AA AA;
 extern const AA aa_data[AA_LEN];
 
 int aa_get_sym1_index (char aa);
+int aa_check          (const char *seq);
 
 #endif /* aa.h */

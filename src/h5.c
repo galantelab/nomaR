@@ -130,7 +130,7 @@ h5_create_integer_datatype (void)
 {
 	hid_t datatype_id;
 
-	datatype_id = H5Tcopy (H5T_STD_U32LE);
+	datatype_id = H5Tcopy (H5T_NATIVE_HSIZE);
 	if (datatype_id < 0)
 		log_fatal ("H5Tcopy: Error creating datatype 'int'");
 
@@ -154,7 +154,7 @@ h5_create_string_datatype (void)
 
 static hid_t
 h5_create_count_dataset (hid_t file_id, hid_t datatype_id,
-		uint32_t x_len, uint32_t y_len)
+		size_t x_len, size_t y_len)
 {
 	hid_t dataset_id, dataspace_id;
 	hsize_t dims[2];
@@ -181,7 +181,7 @@ h5_create_count_dataset (hid_t file_id, hid_t datatype_id,
 }
 
 static hid_t
-h5_create_label_dataset (hid_t file_id, hid_t datatype_id, uint32_t x_len)
+h5_create_label_dataset (hid_t file_id, hid_t datatype_id, size_t x_len)
 {
 	hid_t dataset_id, dataspace_id;
 	hsize_t dims[1];
@@ -238,7 +238,7 @@ h5_close (H5 *h5)
 }
 
 H5 *
-h5_create (const char *file, uint32_t x_len, uint32_t y_len)
+h5_create (const char *file, size_t x_len, size_t y_len)
 {
 	assert (file != NULL);
 	assert (x_len > 0 && y_len > 0);
@@ -270,7 +270,7 @@ h5_create (const char *file, uint32_t x_len, uint32_t y_len)
 }
 
 void
-h5_write_count_dataset (H5 *h5, uint32_t *data)
+h5_write_count_dataset (H5 *h5, size_t *data)
 {
 	herr_t status;
 

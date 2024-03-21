@@ -81,10 +81,10 @@ buf_expand (void **buf, size_t size,
 	return final_nmemb;
 }
 
-uint32_t
-powu (uint32_t base, uint32_t exp)
+size_t
+powu (size_t base, size_t exp)
 {
-	uint32_t result = 1;
+	size_t result = 1;
 
 	while (exp)
 		{

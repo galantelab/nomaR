@@ -11,18 +11,18 @@
 
 struct _RealIter
 {
-	int          seq_len;
-	const char * seq;
+	size_t          seq_len;
+	const char    * seq;
 
-	int          x, y, z;
+	size_t          x, y, z;
 
-	int          k;
+	size_t          k;
 };
 
 typedef struct _RealIter RealIter;
 
 void
-k_mer_iter_init (KMerIter *iter, const char *seq, int k)
+k_mer_iter_init (KMerIter *iter, const char *seq, size_t k)
 {
 	assert (iter != NULL);
 	assert (seq != NULL && seq[0] != '\0');

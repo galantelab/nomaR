@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "aa.h"
 
 const AA aa_data[AA_LEN] = {
@@ -53,4 +54,19 @@ aa_get_sym1_index (char aa)
 		}
 
 	return index;
+}
+
+int
+aa_check (const char *seq)
+{
+	if (seq == NULL)
+		return 0;
+
+	const char *p = NULL;
+
+	for (p = seq; *p != '\0'; p++)
+		if (aa_get_sym1_index (*p) == -1)
+			return 0;
+
+	return 1;
 }

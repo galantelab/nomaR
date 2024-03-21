@@ -19,18 +19,18 @@ START_TEST (test_h5_create)
 	const char file[] = "/tmp/ponga.h5";
 	H5 *h5 = NULL;
 
-	int i = 0;
-	int j = 0;
-	int k = 2;
+	size_t i = 0;
+	size_t j = 0;
+	size_t k = 2;
 
 	const char *label[] = {
 		"class1", "class2", "class3"
 	};
 
-	int x_len = sizeof (label) / sizeof (char *);
-	int y_len = aa_k_mer_get_total (k);
+	size_t x_len = sizeof (label) / sizeof (char *);
+	size_t y_len = aa_k_mer_get_total (k);
 
-	uint32_t counts[x_len * y_len];
+	size_t counts[x_len * y_len];
 
 	h5 = h5_create (file, x_len, y_len);
 
