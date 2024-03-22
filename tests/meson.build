@@ -3,6 +3,7 @@ test_sources = files(
   'check_nomar_aa.c',
   'check_nomar_aa_k_mer.c',
   'check_nomar_count_k_mer.c',
+  'check_nomar_count_table.c',
   'check_nomar_example.c',
   'check_nomar_gz.c',
   'check_nomar_h5.c',

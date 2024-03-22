@@ -22,6 +22,7 @@ main (void)
 	srunner_add_suite (sr, make_count_k_mer_suite ());
 	srunner_add_suite (sr, make_h5_suite ());
 	srunner_add_suite (sr, make_strv_suite ());
+	srunner_add_suite (sr, make_count_table_suite ());
 	srunner_set_tap (sr, "-");
 
 	srunner_run_all (sr, CK_ENV);
