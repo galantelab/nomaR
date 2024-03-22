@@ -40,7 +40,7 @@ get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
 
 	GzFile *gz = NULL;
 
-	size_t num_line = 0;
+	size_t n = 0;
 	char *line = NULL;
 	char *saveptr = NULL;
 
@@ -49,7 +49,7 @@ get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
 
 	gz = gz_open_for_reading (t->file);
 
-	while (gz_getline (gz, &line, &num_line))
+	while (gz_getline (gz, &line, &n))
 		{
 			line = chomp (line);
 
@@ -62,7 +62,7 @@ get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
 			if (seq == NULL)
 				{
 					log_warn ("CLASS (%s) has no SEQ at line %zu",
-							class, num_line);
+							class, gz_get_num_line (gz));
 					continue;
 				}
 
@@ -70,7 +70,7 @@ get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
 				log_fatal (
 						"CLASS (%s) SEQ (%s) does not seem "
 						"to be an amino acid at line %zu",
-						class, seq, num_line);
+						class, seq, gz_get_num_line (gz));
 
 			if (strlen (seq) < t->k)
 				{
@@ -78,7 +78,7 @@ get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
 							"CLASS (%s) SEQ (%s) length is "
 							"smaller than the size of the "
 							"k-mer (%zu) at line %zu",
-							class, seq, t->k, num_line);
+							class, seq, t->k, gz_get_num_line (gz));
 					continue;
 				}
 
