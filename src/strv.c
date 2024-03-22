@@ -48,6 +48,12 @@ strv_builder_end (StrvBuilder *b)
 	return strv;
 }
 
+size_t
+strv_builder_length (StrvBuilder *b)
+{
+	return b->len;
+}
+
 void
 strv_builder_add (StrvBuilder *b, const char *value)
 {
@@ -63,16 +69,10 @@ strv_builder_add (StrvBuilder *b, const char *value)
 	b->strv[b->len++] = xstrdup (value);
 }
 
-void
-strv_builder_add_unique (StrvBuilder *b, const char *value)
+int
+strv_builder_contains (StrvBuilder *b, const char *value, size_t *i)
 {
-	assert (b != NULL);
-
-	if (value == NULL)
-		return;
-
-	if (!strv_contains ((const char * const *) b->strv, value, NULL))
-		strv_builder_add (b, value);
+	return strv_contains ((const char * const *) b->strv, value, i);
 }
 
 void

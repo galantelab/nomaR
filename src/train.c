@@ -82,11 +82,17 @@ get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
 					continue;
 				}
 
-			strv_builder_add_unique (b_strv, class);
+			if (strv_builder_contains (b_strv, class, NULL))
+				strv_builder_add (b_strv, class);
 		}
 
 	xfree (line);
 	gz_close (gz);
+}
+
+static void
+get_sum_and_max_list (const Count *c, size_t **sum, size_t **max)
+{
 }
 
 static void

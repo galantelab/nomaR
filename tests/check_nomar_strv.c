@@ -69,19 +69,50 @@ START_TEST (test_strv_contains)
 }
 END_TEST
 
-START_TEST (test_strv_builder_add_unique)
+START_TEST (test_strv_builder_length)
 {
 	StrvBuilder *b;
-	char **strv = NULL;
+	size_t i = 0;
+
+	char *to_add[] = {
+		"ponga1", "ponga2", "ponga3"
+	};
 
 	b = strv_builder_new ();
 
-	strv_builder_add_unique (b, "ponga");
-	strv_builder_add_unique (b, "ponga");
-	strv_builder_add_unique (b, "ponga");
+	for (i = 0; i < sizeof (to_add) / sizeof (char *); i++)
+		{
+			strv_builder_add (b, to_add[i]);
+			ck_assert_int_eq (strv_builder_length (b), i + 1);
+		}
+
+	strv_free (strv_builder_end (b));
+}
+END_TEST
+
+START_TEST (test_strv_builder_contains)
+{
+	StrvBuilder *b;
+	char **strv = NULL;
+	size_t i = 0;
+
+	char *to_add[] = {
+		"ponga1", "ponga2", "ponga3"
+	};
+
+	b = strv_builder_new ();
+
+	for (i = 0; i < sizeof (to_add) / sizeof (char *); i++)
+		strv_builder_add (b, to_add[i]);
+
+	ck_assert_int_eq (strv_builder_contains (b, "ponga1", NULL), 1);
+	ck_assert_int_eq (strv_builder_contains (b, "trolha", NULL), 0);
+
+	strv_builder_contains (b, "ponga2", &i);
 
 	strv = strv_builder_end (b);
-	ck_assert_int_eq (strv_length (strv), 1);
+	ck_assert_str_eq (strv[i], to_add[i]);
+
 	strv_free (strv);
 }
 END_TEST
@@ -109,7 +140,8 @@ make_strv_suite (void)
 
 	tcase_add_test (tc_core, test_strv_builder_new);
 	tcase_add_test (tc_core, test_strv_builder_add);
-	tcase_add_test (tc_core, test_strv_builder_add_unique);
+	tcase_add_test (tc_core, test_strv_builder_length);
+	tcase_add_test (tc_core, test_strv_builder_contains);
 	tcase_add_test (tc_core, test_strv_contains);
 
 	tcase_add_test_raise_signal (tc_abort,
