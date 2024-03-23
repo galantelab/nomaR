@@ -77,6 +77,23 @@ START_TEST (test_buf_expand)
 }
 END_TEST
 
+START_TEST (test_entry_size)
+{
+	char *name = NULL;
+	size_t size = 0;
+
+	size = entry_set (&name, size, "ponga");
+	ck_assert_str_eq (name, "ponga");
+	ck_assert_int_eq (size, 8); // 2^3
+
+	size = entry_set (&name, size, "pongaponga");
+	ck_assert_str_eq (name, "pongaponga");
+	ck_assert_int_eq (size, 16); // 2^4
+
+	xfree (name);
+}
+END_TEST
+
 START_TEST (test_powu)
 {
 	int base[] = {0, 1, 2};
@@ -131,6 +148,7 @@ make_utils_suite (void)
 	tcase_add_test (tc_core, test_trimc);
 	tcase_add_test (tc_core, test_trim);
 	tcase_add_test (tc_core, test_buf_expand);
+	tcase_add_test (tc_core, test_entry_size);
 	tcase_add_test (tc_core, test_powu);
 	tcase_add_test (tc_core, test_exists);
 	tcase_add_test (tc_core, test_is_terminal);

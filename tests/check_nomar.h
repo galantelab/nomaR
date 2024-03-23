@@ -12,5 +12,6 @@ Suite * make_count_k_mer_suite (void);
 Suite * make_h5_suite          (void);
 Suite * make_strv_suite        (void);
 Suite * make_count_table_suite (void);
+Suite * make_aa_file_suite     (void);
 
 #endif /* check_nomar.h */
