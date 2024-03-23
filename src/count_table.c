@@ -53,7 +53,7 @@ count_table_add_row (CountTable *ct, const size_t nrows)
 	ct->data = xrealloc (ct->data,
 			final_nrows * ct->ncols * sizeof (size_t));
 
-	memset (&ct->data[old_nrows], 0,
+	memset (&ct->data[old_nrows * ct->ncols], 0,
 			(final_nrows - old_nrows) * ct->ncols * sizeof (size_t));
 
 	ct->nrows = final_nrows;
