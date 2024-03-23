@@ -3,18 +3,18 @@
 
 #include <stdlib.h>
 
-struct _Count
+#include "count_table.h"
+
+struct _CountKMer
 {
-	size_t  x_len;
-	size_t  y_len;
-	size_t *data;
+	size_t        k;
+	char        **label;
+	CountTable   *table;
 };
 
-typedef struct _Count Count;
+typedef struct _CountKMer CountKMer;
 
-#define COUNT_GET(count,x,y) ((count)->data[x * (count)->y_len + y])
-
-Count * count_k_mer (const char *file, const char **label, size_t num_label, size_t k);
-void    count_free  (Count *c);
+CountKMer * count_k_mer      (const char *file, const size_t k);
+void        count_k_mer_free (CountKMer *ck);
 
 #endif /* count_k_mer.h */

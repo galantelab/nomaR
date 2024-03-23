@@ -34,7 +34,7 @@ START_TEST (test_count_k_mer_freq)
 {
 	const char file[] = "/tmp/ponga.txt";
 
-	Count *c = NULL;
+	CountKMer *ck = NULL;
 	int k = 1;
 	int i = 0;
 	int j = 0;
@@ -52,17 +52,24 @@ START_TEST (test_count_k_mer_freq)
 
 	create_test_file (file);
 
-	c = count_k_mer (file, label, num_label, k);
+	ck = count_k_mer (file, k);
 
-	ck_assert_ptr_ne (c, NULL);
-	ck_assert_int_eq (c->x_len, num_label);
-	ck_assert_int_eq (c->y_len, aa_k_mer_get_pos_corrected_total (k));
+	ck_assert_ptr_nonnull (ck);
+	ck_assert_ptr_nonnull (ck->table);
+	ck_assert_ptr_nonnull (ck->label);
 
-	for (i = 0; i < c->x_len; i++)
-		for (j = 0; j < c->y_len; j++)
-			ck_assert_int_eq (COUNT_GET (c, i, j), tp[i][j]);
+	ck_assert_int_eq (count_table_get_nrows (ck->table), num_label);
+	ck_assert_int_eq (count_table_get_ncols (ck->table),
+			aa_k_mer_get_pos_corrected_total (k));
 
-	count_free (c);
+	for (i = 0; i < count_table_get_nrows (ck->table); i++)
+		{
+			ck_assert_str_eq (ck->label[i], label[i]);
+			for (j = 0; j < count_table_get_ncols (ck->table); j++)
+				ck_assert_int_eq (count_table_get (ck->table, i, j), tp[i][j]);
+		}
+
+	count_k_mer_free (ck);
 	unlink (file);
 }
 END_TEST

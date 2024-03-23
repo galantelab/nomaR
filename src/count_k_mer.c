@@ -1,144 +1,108 @@
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "aa_k_mer.h"
+#include "log.h"
+#include "strv.h"
 #include "k_mer.h"
-#include "gz.h"
-#include "utils.h"
+#include "aa_k_mer.h"
+#include "aa_file.h"
 #include "wrapper.h"
 #include "count_k_mer.h"
 
-struct _CountKMer
-{
-	Count       *c;
-	GzFile      *gz;
-	const char  *file;
-	const char **label;
-	size_t       num_label;
-	size_t       k;
-};
-
-typedef struct _CountKMer CountKMer;
-
-static Count *
-count_new (size_t k, size_t num_label)
-{
-	Count *c = NULL;
-	size_t *data = NULL;
-	size_t y_len = 0;
-
-	y_len = aa_k_mer_get_pos_corrected_total (k);
-
-	c = xcalloc (1, sizeof (Count));
-	data = xcalloc (y_len * num_label, sizeof (size_t));
-
-	*c = (Count) {
-		.x_len = num_label,
-		.y_len = y_len,
-		.data  = data
-	};
-
-	return c;
-}
-
-void
-count_free (Count *c)
-{
-	if (c == NULL)
-		return;
-
-	xfree (c->data);
-	xfree (c);
-}
-
 static inline void
-count_process_k_mer (CountKMer *ck, size_t x, const char *seq)
+count_process_k_mer (const char *seq, const size_t row,
+		const size_t k, CountTable *table)
 {
 	KMerIter iter = {};
 	KMerPos pos = 0;
-	size_t y = 0;
-	char k_mer[ck->k + 1];
+	size_t col = 0;
+	char k_mer[k + 1];
 
-	k_mer_iter_init (&iter, seq, ck->k);
+	k_mer_iter_init (&iter, seq, k);
 
 	while ((pos = k_mer_iter_next (&iter, k_mer)))
 	{
-		y = aa_k_mer_get_pos_corrected_index (k_mer, ck->k, pos);
-		COUNT_GET (ck->c, x, y) ++;
+		col = aa_k_mer_get_pos_corrected_index (k_mer, k, pos);
+		count_table_sum (table, row, col, 1);
 	}
 }
 
-static inline int
-count_get_label_index (CountKMer *ck, const char *class, size_t *x)
-{
-	size_t i = 0;
-
-	for (; i < ck->num_label; i++)
-		{
-			if (strcmp (ck->label[i], class) == 0)
-				{
-					*x = i;
-					return 1;
-				}
-		}
-
-	return 0;
-}
-
 static inline void
-count_process_data (CountKMer *ck)
+count_process_data (const char *file, CountTable *table,
+		StrvBuilder *sb, const size_t k)
 {
-	size_t num_line = 0;
-	char *line = NULL;
+	AAFile *aa_file = NULL;
+	AAFileEntry *entry = NULL;
+	size_t row = 0;
 
-	const char *class = NULL;
-	const char *seq = NULL;
-	char *saveptr = NULL;
+	aa_file = aa_file_open_for_reading (file);
+	entry = aa_file_entry_new ();
 
-	size_t x = 0;
-
-	while (gz_getline (ck->gz, &line, &num_line))
+	while (aa_file_read (aa_file, entry))
 		{
-			line = chomp (line);
+			if (strlen (entry->seq) < k)
+				{
+					log_warn (
+							"CLASS (%s) SEQ (%s) length is "
+							"smaller than the size of the "
+							"k-mer (%zu) at line %zu",
+							entry->class, entry->seq,
+							k, entry->num_line);
+					continue;
+				}
 
-			class = strtok_r (line, "\t ", &saveptr);
-			seq = strtok_r (NULL, "\t ", &saveptr);
+			if (!strv_builder_contains (sb, entry->class, &row))
+				{
+					count_table_add_row (table, 1);
+					strv_builder_add (sb, entry->class);
+					row = strv_builder_length (sb) - 1;
+				}
 
-			if (class != NULL && seq != NULL
-					&& strlen (seq) >= ck->k
-					&& count_get_label_index (ck, class, &x))
-				count_process_k_mer (ck, x, seq);
+			count_process_k_mer (entry->seq, row, k, table);
 		}
 
-	xfree (line);
+	aa_file_entry_free (entry);
+	aa_file_close (aa_file);
 }
 
-Count *
-count_k_mer (const char *file, const char **label, size_t num_label, size_t k)
+CountKMer *
+count_k_mer (const char *file, const size_t k)
 {
 	assert (file != NULL);
-	assert (label != NULL && *label != NULL);
-	assert (num_label > 0);
 	assert (k > 0);
 
-	CountKMer ck = {};
-	Count *c = NULL;
-	GzFile *gz = NULL;
+	CountKMer *ck = NULL;
 
-	c = count_new (k, num_label);
-	gz = gz_open_for_reading (file);
+	StrvBuilder *sb = NULL;
+	CountTable *table = NULL;
+	size_t ncols = 0;
 
-	ck = (CountKMer) {
-		.c         = c,
-		.gz        = gz,
-		.file      = file,
-		.label     = label,
-		.num_label = num_label,
-		.k         = k
+	ck = xcalloc (1, sizeof (CountKMer));
+
+	sb = strv_builder_new ();
+	ncols = aa_k_mer_get_pos_corrected_total (k);
+	table = count_table_new (0, ncols);
+
+	count_process_data (file, table, sb, k);
+
+	*ck = (CountKMer) {
+		.k      = k,
+		.table  = table,
+		.label  = strv_builder_end (sb)
 	};
 
-	count_process_data (&ck);
+	return ck;
+}
 
-	gz_close (gz);
-	return c;
+void
+count_k_mer_free (CountKMer *ck)
+{
+	if (ck == NULL)
+		return;
+
+	strv_free (ck->label);
+	count_table_free (ck->table);
+
+	xfree (ck);
 }
