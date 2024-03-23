@@ -82,6 +82,21 @@ buf_expand (void **buf, size_t size,
 }
 
 size_t
+entry_set (char **buf, size_t buf_size, const char *entry)
+{
+	size_t entry_size = strlen (entry);
+
+	if (entry_size >= buf_size)
+		buf_size = buf_expand ((void **) buf, sizeof (char),
+				buf_size, entry_size - buf_size + 1);
+
+	memcpy (*buf, entry, sizeof (char) * entry_size);
+	(*buf)[entry_size] = '\0';
+
+	return buf_size;
+}
+
+size_t
 powu (size_t base, size_t exp)
 {
 	size_t result = 1;

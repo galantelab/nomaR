@@ -9,6 +9,8 @@ char * trimc (char *str, int c);
 
 size_t buf_expand (void **buf, size_t size,
 		size_t old_nmemb, size_t length);
+size_t entry_set  (char **buf, size_t buf_size,
+		const char *entry);
 
 size_t powu (size_t base, size_t exp);
 
