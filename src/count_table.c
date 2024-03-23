@@ -14,13 +14,18 @@ struct _CountTable
 };
 
 CountTable *
-count_table_new (const size_t ncols)
+count_table_new (const size_t nrows, const size_t ncols)
 {
 	assert (ncols > 0);
 
 	CountTable *ct = NULL;
 
 	ct = xcalloc (1, sizeof (CountTable));
+
+	if (nrows > 0)
+		ct->data = xcalloc (nrows * ncols, sizeof (size_t));
+
+	ct->nrows = nrows;
 	ct->ncols = ncols;
 
 	return ct;
@@ -78,6 +83,13 @@ count_table_get_dim (const CountTable *ct, size_t *dim)
 	dim[1] = ct->ncols;
 }
 
+size_t *
+count_table_data (const CountTable *ct)
+{
+	assert (ct != NULL);
+	return ct->data;
+}
+
 void
 count_table_set (CountTable *ct, size_t row, size_t col, const size_t value)
 {
@@ -96,4 +108,14 @@ count_table_get (const CountTable *ct, size_t row, size_t col)
 	assert (col < ct->ncols);
 
 	return COUNT_TABLE_GET (ct, row, col);
+}
+
+void
+count_table_sum (CountTable *ct, size_t row, size_t col, const size_t value)
+{
+	assert (ct != NULL);
+	assert (row < ct->nrows);
+	assert (col < ct->ncols);
+
+	COUNT_TABLE_GET (ct, row, col) += value;
 }
