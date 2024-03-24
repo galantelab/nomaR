@@ -11,11 +11,8 @@
 #include <assert.h>
 
 #include "log.h"
-#include "gz.h"
-#include "aa.h"
-#include "strv.h"
 #include "utils.h"
-#include "wrapper.h"
+#include "strv.h"
 #include "count_k_mer.h"
 #include "h5.h"
 #include "train.h"
@@ -33,108 +30,35 @@ struct _Train
 typedef struct _Train Train;
 
 static void
-get_label_list_and_validate_seq (Train *t, StrvBuilder *b_strv)
-{
-	assert (t != NULL);
-	assert (b_strv != NULL);
-
-	GzFile *gz = NULL;
-
-	size_t n = 0;
-	char *line = NULL;
-	char *saveptr = NULL;
-
-	const char *class = NULL;
-	const char *seq = NULL;
-
-	gz = gz_open_for_reading (t->file);
-
-	while (gz_getline (gz, &line, &n))
-		{
-			line = chomp (line);
-
-			class = strtok_r (line, "\t ", &saveptr);
-			seq = strtok_r (NULL, "\t ", &saveptr);
-
-			if (class == NULL)
-				continue;
-
-			if (seq == NULL)
-				{
-					log_warn ("CLASS (%s) has no SEQ at line %zu",
-							class, gz_get_num_line (gz));
-					continue;
-				}
-
-			if (!aa_check (seq))
-				log_fatal (
-						"CLASS (%s) SEQ (%s) does not seem "
-						"to be an amino acid at line %zu",
-						class, seq, gz_get_num_line (gz));
-
-			if (strlen (seq) < t->k)
-				{
-					log_warn (
-							"CLASS (%s) SEQ (%s) length is "
-							"smaller than the size of the "
-							"k-mer (%zu) at line %zu",
-							class, seq, t->k, gz_get_num_line (gz));
-					continue;
-				}
-
-			if (strv_builder_contains (b_strv, class, NULL))
-				strv_builder_add (b_strv, class);
-		}
-
-	xfree (line);
-	gz_close (gz);
-}
-
-static void
-get_sum_and_max_list (const Count *c, size_t **sum, size_t **max)
-{
-}
-
-static void
 run (Train *t)
 {
+	CountKMer *ck = NULL;
+
 	H5 *h5 = NULL;
 	char h5_file[BUFSIZ] = {};
 
-	Count *c = NULL;
+	log_info ("Count amino acid k-mer's in '%s'", t->file);
+	ck = count_k_mer (t->file,  t->k);
 
-	StrvBuilder *b_strv = NULL;
-	char **label_list = NULL;
-
-	b_strv = strv_builder_new ();
-
-	log_info ("Validating file '%s'", t->file);
-	get_label_list_and_validate_seq (t, b_strv);
-
-	label_list = strv_builder_end (b_strv);
-	if (strv_length (label_list) == 0)
+	if (strv_length (ck->label) == 0)
 		log_fatal ("Empty file '%s' or no valid entry found",
 				t->file);
-
-	log_info ("Count amino acid k-mer's in '%s'", t->file);
-	c = count_k_mer (t->file, (const char **) label_list,
-			strv_length (label_list), t->k);
 
 	snprintf (h5_file, BUFSIZ, "%s.h5", t->prefix);
 
 	log_info ("Create h5 file '%s'", h5_file);
-	h5 = h5_create (h5_file, c->x_len, c->y_len);
+	h5 = h5_create (h5_file, count_table_get_nrows (ck->table),
+			count_table_get_ncols (ck->table));
 
 	log_info ("Dump count dataset to '%s'", h5_file);
-	h5_write_count_dataset (h5, c->data);
+	h5_write_count_dataset (h5, count_table_data (ck->table));
 
 	log_info ("Dump label dataset to '%s'", h5_file);
-	h5_write_label_dataset (h5, (const char **) label_list);
+	h5_write_label_dataset (h5, (const char **) ck->label);
 
 	log_info ("File '%s' is ready!", h5_file);
 
-	strv_free (label_list);
-	count_free (c);
+	count_k_mer_free (ck);
 	h5_close (h5);
 }
 
