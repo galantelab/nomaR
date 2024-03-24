@@ -1,3 +1,18 @@
+Version 0.4.0
+
+* Add hdf5 wrapper.
+
+* Read input file with a custom getline, desgined
+  to parse two columns <CLASS> and <SEQ>.
+
+* Write a library to manage matrix creation and
+  index access.
+
+* Add train command: Read input file and get
+  labels of the classes and fill the count
+  matrix. The results are dumped in a h5 file
+  format.
+
 Version 0.3.0
 
 * Calculate amino acid k-mer index, taking into

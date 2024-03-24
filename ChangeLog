@@ -1,7 +1,42 @@
+2024-03-23 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Change src/train.c: Use CountKMer
+	* Change src/count_k_mer.[ch]: Use new data structs
+	* Fix src/count_table.c (count_table_add_row)
+	* Fix bug in memset. Zero the allocated memory.
+	* Add src/count_table.c (count_table_sum)
+	* Add README.md: Logo image and description
+	* Add assets/images/logo.png: Logo for README.md
+	* Add aa_file.[ch]: Read and parse input file
+	* Add src/utils.c (entry_set): Set buf with text
+
+2024-03-22 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Add src/count_table.[ch]: Column fixed-len matrix
+	* Add src/strv.c (strv_builder_contains)
+
+2024-03-21 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Fix src/train.c (num_line): gz_get_num_line ()
+	* Add src/train.c: Count k-mer in file
+	* Add src/strv.c (strv_builder_add_unique)
+	* Add src/strv.[ch]: Manage NULL terminated char **
+	* Change all source: unsigned int to size_t
+
+2024-03-20 Thiago L. A. Miller <tmiller@mochsl.org.br>
+
+	* Fix tests/check_nomar_h5.c: Valgrind timeout issue
+	* Add train.[ch] (options and help): Command train
+	* Add src/h5.[ch] (h5_write_{count,label}_dataset)
+	* Add src/h5.[ch]: Metadata and tests
+	* Add src/h5.[ch]: Wrapper around hdf5
+
 2024-03-19 Thiago L. A. Miller <tmiller@mochsl.org.br>
 
 	* Add src/count_k_mer.[ch]: Count k-mer freq
 	* Change src/aa_k_mer.[ch], utils.[ch]: Use uint32_t
+	* Add src/utils.[ch] (exists, is_terminal)
+	* Add src/log.[ch]: Manage log messages
 
 2024-03-17 Thiago L. A. Miller <tmiller@mochsl.org.br>
 
