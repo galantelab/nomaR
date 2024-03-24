@@ -119,7 +119,7 @@ h5_create_file (const char *file)
 
 	file_id = H5Fcreate (file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 	if (file_id < 0)
-		log_fatal ("h5_create: Cannot create file '%s'", file);
+		log_fatal ("H5Fcreate: Cannot create file '%s'", file);
 
 	return file_id;
 }
@@ -228,6 +228,25 @@ h5_close (H5 *h5)
 	xfree (h5);
 }
 
+static H5 *
+h5_new (void)
+{
+	H5 *h5 = NULL;
+	hid_t datatype_int_id, datatype_str_id;
+
+	datatype_int_id  = h5_create_integer_datatype ();
+	datatype_str_id  = h5_create_string_datatype ();
+
+	h5 = xcalloc (1, sizeof (H5));
+
+	*h5 = (H5) {
+		.datatype_int_id  = datatype_int_id,
+		.datatype_str_id  = datatype_str_id
+	};
+
+	return h5;
+}
+
 H5 *
 h5_create (const char *file)
 {
@@ -235,40 +254,31 @@ h5_create (const char *file)
 
 	H5 *h5 = NULL;
 	hid_t file_id;
-	hid_t datatype_int_id, datatype_str_id;
 
-	file_id          = h5_create_file (file);
-	datatype_int_id  = h5_create_integer_datatype ();
-	datatype_str_id  = h5_create_string_datatype ();
-
-	h5 = xcalloc (1, sizeof (H5));
-
-	*h5 = (H5) {
-		.file_id          = file_id,
-		.datatype_int_id  = datatype_int_id,
-		.datatype_str_id  = datatype_str_id
-	};
-
+	file_id = h5_create_file (file);
 	h5_create_and_write_metadata (file_id);
+
+	h5 = h5_new ();
+	h5->file_id = file_id;
 
 	return h5;
 }
 
 static void
-h5_metadata_k_mer (hid_t dataset_count_id, const size_t k)
+h5_write_k_mer (hid_t dataset_count_id, hid_t datatype_int_id, const size_t k)
 {
 	hid_t attribute_id, attribute_space;
 	herr_t status;
 
 	attribute_space = H5Screate (H5S_SCALAR);
 
-	attribute_id = H5Acreate2 (dataset_count_id, "k-mer", H5T_NATIVE_HSIZE,
+	attribute_id = H5Acreate2 (dataset_count_id, "k-mer", datatype_int_id,
 			attribute_space, H5P_DEFAULT, H5P_DEFAULT);
 
 	if (attribute_id < 0)
 			log_fatal ("H5Acreate2: Error creating attribute 'k-mer'");
 
-	status = H5Awrite (attribute_id, H5T_NATIVE_HSIZE, &k);
+	status = H5Awrite (attribute_id, datatype_int_id, &k);
 	if (status < 0)
 		log_fatal ("H5Awrite: Error writing metadata 'k-mer'");
 
@@ -301,7 +311,7 @@ h5_write_count_dataset (H5 *h5, const CountTable *table, const size_t k)
 	if (status < 0)
 		log_fatal ("H5Dwrite: Error writing to dataset '/count'");
 
-	h5_metadata_k_mer (dataset_count_id, k);
+	h5_write_k_mer (dataset_count_id, h5->datatype_int_id, k);
 
 	status = H5Dclose (dataset_count_id);
 	if (status < 0)
@@ -331,4 +341,138 @@ h5_write_label_dataset (H5 *h5, const char **label)
 	status = H5Dclose (dataset_label_id);
 	if (status < 0)
 		log_fatal ("H5Dclose: Error closing dataset '/label'");
+}
+
+static hid_t
+h5_open_file_ro (const char *file)
+{
+	hid_t file_id;
+
+	file_id = H5Fopen (file, H5F_ACC_RDONLY, H5P_DEFAULT);
+	if (file_id < 0)
+		log_fatal ("H5Fopen: Cannot open file '%s'", file);
+
+	return file_id;
+}
+
+H5 *
+h5_open (const char *file)
+{
+	assert (file != NULL);
+
+	H5 *h5 = NULL;
+	hid_t file_id;
+
+	file_id = h5_open_file_ro (file);
+
+	h5 = h5_new ();
+	h5->file_id = file_id;
+
+	return h5;
+}
+
+static void
+h5_read_k_mer (hid_t dataset_count_id, hid_t datatype_int_id, size_t *k)
+{
+	hid_t attribute_id;
+	herr_t status;
+
+	attribute_id = H5Aopen (dataset_count_id, "k-mer", H5P_DEFAULT);
+	if (attribute_id < 0)
+		log_fatal ("H5Aopen: Failed to open 'k-mer' attribute");
+
+	status = H5Aread (attribute_id, datatype_int_id, k);
+	if (status < 0)
+		log_fatal ("H5Aread: Failed to read 'k-mer' value");
+
+	status = H5Aclose (attribute_id);
+	if (status < 0)
+		log_fatal ("H5Aclose: Failed to close 'k-mer' attribute");
+}
+
+CountTable *
+h5_read_count_dataset (H5 *h5, size_t *k)
+{
+	assert (h5 != NULL);
+	assert (k != NULL);
+
+	CountTable *table = NULL;
+
+	hid_t dataset_count_id, dataspace_id;
+	hsize_t dims[2];
+	herr_t status;
+
+	dataset_count_id = H5Dopen (h5->file_id, "/count", H5P_DEFAULT);
+	if (dataset_count_id < 0)
+		log_fatal ("H5Dopen: Failed to open /count dataset");
+
+	dataspace_id = H5Dget_space (dataset_count_id);
+	if (dataspace_id < 0)
+		log_fatal ("H5Dget_space: Failed to get dataspace");
+
+	status = H5Sget_simple_extent_dims (dataspace_id, dims, NULL);
+	if (status < 0)
+		log_fatal ("H5Sget_simple_extent_dims: Failed to get dims");
+
+	table = count_table_new (dims[0], dims[1]);
+
+	status = H5Dread (dataset_count_id, h5->datatype_int_id,
+			H5S_ALL, H5S_ALL, H5P_DEFAULT, count_table_data (table));
+
+	if (status < 0)
+		log_fatal ("H5Dread: Failed to read /count dataset");
+
+	h5_read_k_mer (dataset_count_id, h5->datatype_int_id, k);
+
+	status = H5Sclose (dataspace_id);
+	if (status < 0)
+		log_fatal ("H5Sclose: Failed to close dataspace");
+
+	status = H5Dclose (dataset_count_id);
+	if (status < 0)
+		log_fatal ("H5Aclose: Failed to close /count dataset");
+
+	return table;
+}
+
+char **
+h5_read_label_dataset (H5 *h5)
+{
+	assert (h5 != NULL);
+
+	char **label = NULL;
+
+	hid_t dataset_label_id, dataspace_id;
+	hsize_t num_label;
+	herr_t status;
+
+	dataset_label_id = H5Dopen (h5->file_id, "/label", H5P_DEFAULT);
+	if (dataset_label_id < 0)
+		log_fatal ("H5Dopen: Failed to open /label dataset");
+
+	dataspace_id = H5Dget_space (dataset_label_id);
+	if (dataspace_id < 0)
+		log_fatal ("H5Dget_space: Failed to get dataspace");
+
+	num_label = H5Sget_simple_extent_npoints (dataspace_id);
+	if (num_label < 0)
+		log_fatal ("H5Sget_simple_extent_npoints: Failed to get num_label");
+
+	label = xcalloc (num_label + 1, sizeof (char *));
+
+	status = H5Dread (dataset_label_id, h5->datatype_str_id,
+			H5S_ALL, H5S_ALL, H5P_DEFAULT, label);
+
+	if (status < 0)
+		log_fatal ("H5Dread: Failed to read /label dataset");
+
+	status = H5Sclose (dataspace_id);
+	if (status < 0)
+		log_fatal ("H5Sclose: Failed to close dataspace");
+
+	status = H5Dclose (dataset_label_id);
+	if (status < 0)
+		log_fatal ("H5Aclose: Failed to close /label dataset");
+
+	return label;
 }
