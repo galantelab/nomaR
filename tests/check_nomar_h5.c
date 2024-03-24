@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include "check_nomar.h"
 
+#include "../src/strv.h"
 #include "../src/aa_k_mer.h"
 #include "../src/h5.h"
 
@@ -19,29 +20,33 @@ START_TEST (test_h5_create)
 	const char file[] = "/tmp/ponga.h5";
 	H5 *h5 = NULL;
 
+	CountTable *table = NULL;
+
 	size_t i = 0;
 	size_t j = 0;
 	size_t k = 2;
 
 	const char *label[] = {
-		"class1", "class2", "class3"
+		"class1", "class2", "class3", NULL
 	};
+	char **ptr = (char **) label;
 
-	size_t x_len = sizeof (label) / sizeof (char *);
-	size_t y_len = aa_k_mer_get_total (k);
+	size_t nrows = strv_length (ptr);
+	size_t ncols = aa_k_mer_get_total (k);
 
-	size_t counts[x_len * y_len];
+	h5 = h5_create (file);
+	table = count_table_new (nrows, ncols);
 
-	h5 = h5_create (file, x_len, y_len);
+	for (i = 0; i < nrows; i++)
+		for (j = 0; j < ncols; j++)
+			count_table_set (table, i, j, ncols * i + j);
 
-	for (i = 0; i < x_len; i++)
-		for (j = 0; j < y_len; j++)
-			counts[y_len * i + j] = y_len * i + j;
-
-	h5_write_count_dataset (h5, counts);
+	h5_write_count_dataset (h5, table, k);
 	h5_write_label_dataset (h5, label);
 
 	h5_close (h5);
+	count_table_free (table);
+
 	unlink (file);
 }
 END_TEST

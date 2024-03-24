@@ -37,7 +37,7 @@ run (Train *t)
 	H5 *h5 = NULL;
 	char h5_file[BUFSIZ] = {};
 
-	log_info ("Count amino acid k-mer's in '%s'", t->file);
+	log_info ("Count amino acid k-mer's of length '%zu' in '%s'", t->k, t->file);
 	ck = count_k_mer (t->file,  t->k);
 
 	if (strv_length (ck->label) == 0)
@@ -47,11 +47,10 @@ run (Train *t)
 	snprintf (h5_file, BUFSIZ, "%s.h5", t->prefix);
 
 	log_info ("Create h5 file '%s'", h5_file);
-	h5 = h5_create (h5_file, count_table_get_nrows (ck->table),
-			count_table_get_ncols (ck->table));
+	h5 = h5_create (h5_file);
 
 	log_info ("Dump count dataset to '%s'", h5_file);
-	h5_write_count_dataset (h5, count_table_data (ck->table));
+	h5_write_count_dataset (h5, ck->table, t->k);
 
 	log_info ("Dump label dataset to '%s'", h5_file);
 	h5_write_label_dataset (h5, (const char **) ck->label);

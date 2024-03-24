@@ -11,14 +11,13 @@
 
 #include "log.h"
 #include "wrapper.h"
+#include "strv.h"
 #include "h5.h"
 
 /* Private */
 struct _H5
 {
 	hid_t file_id;
-	hid_t dataset_count_id;
-	hid_t dataset_label_id;
 	hid_t datatype_int_id;
 	hid_t datatype_str_id;
 };
@@ -214,14 +213,6 @@ h5_close (H5 *h5)
 
 	herr_t status;
 
-	status = H5Dclose (h5->dataset_count_id);
-	if (status < 0)
-		log_fatal ("H5Dclose: Error closing dataset '/count'");
-
-	status = H5Dclose (h5->dataset_label_id);
-	if (status < 0)
-		log_fatal ("H5Dclose: Error closing dataset '/label'");
-
 	status = H5Tclose (h5->datatype_int_id);
 	if (status < 0)
 		log_fatal ("H5Tclose: Error closing datatype 'int'");
@@ -238,28 +229,22 @@ h5_close (H5 *h5)
 }
 
 H5 *
-h5_create (const char *file, size_t x_len, size_t y_len)
+h5_create (const char *file)
 {
 	assert (file != NULL);
-	assert (x_len > 0 && y_len > 0);
 
 	H5 *h5 = NULL;
 	hid_t file_id;
-	hid_t dataset_count_id, dataset_label_id;
 	hid_t datatype_int_id, datatype_str_id;
 
 	file_id          = h5_create_file (file);
 	datatype_int_id  = h5_create_integer_datatype ();
 	datatype_str_id  = h5_create_string_datatype ();
-	dataset_count_id = h5_create_count_dataset (file_id, datatype_int_id, x_len, y_len);
-	dataset_label_id = h5_create_label_dataset (file_id, datatype_str_id, x_len);
 
 	h5 = xcalloc (1, sizeof (H5));
 
 	*h5 = (H5) {
 		.file_id          = file_id,
-		.dataset_count_id = dataset_count_id,
-		.dataset_label_id = dataset_label_id,
 		.datatype_int_id  = datatype_int_id,
 		.datatype_str_id  = datatype_str_id
 	};
@@ -269,26 +254,81 @@ h5_create (const char *file, size_t x_len, size_t y_len)
 	return h5;
 }
 
-void
-h5_write_count_dataset (H5 *h5, size_t *data)
+static void
+h5_metadata_k_mer (hid_t dataset_count_id, const size_t k)
 {
+	hid_t attribute_id, attribute_space;
 	herr_t status;
 
-	status = H5Dwrite (h5->dataset_count_id, h5->datatype_int_id,
-		H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+	attribute_space = H5Screate (H5S_SCALAR);
 
+	attribute_id = H5Acreate2 (dataset_count_id, "k-mer", H5T_NATIVE_HSIZE,
+			attribute_space, H5P_DEFAULT, H5P_DEFAULT);
+
+	if (attribute_id < 0)
+			log_fatal ("H5Acreate2: Error creating attribute 'k-mer'");
+
+	status = H5Awrite (attribute_id, H5T_NATIVE_HSIZE, &k);
 	if (status < 0)
-		log_fatal ("H5Dwrite: Error writing to dataset '/count'");
+		log_fatal ("H5Awrite: Error writing metadata 'k-mer'");
+
+	status = H5Sclose (attribute_space);
+	if (status < 0)
+		log_fatal ("H5Aclose: Error closing attribute space");
+
+	status = H5Aclose (attribute_id);
+	if (status < 0)
+		log_fatal ("H5Aclose: Error closing attribute");
 }
 
 void
-h5_write_label_dataset (H5 *h5, const char **data)
+h5_write_count_dataset (H5 *h5, const CountTable *table, const size_t k)
 {
+	assert (h5 != NULL);
+	assert (table != NULL);
+	assert (k > 0);
+
+	hid_t dataset_count_id;
 	herr_t status;
 
-	status = H5Dwrite (h5->dataset_label_id, h5->datatype_str_id,
-		H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+	dataset_count_id = h5_create_count_dataset (h5->file_id,
+			h5->datatype_int_id, count_table_get_nrows (table),
+			count_table_get_ncols (table));
+
+	status = H5Dwrite (dataset_count_id, h5->datatype_int_id,
+		H5S_ALL, H5S_ALL, H5P_DEFAULT, count_table_data (table));
+
+	if (status < 0)
+		log_fatal ("H5Dwrite: Error writing to dataset '/count'");
+
+	h5_metadata_k_mer (dataset_count_id, k);
+
+	status = H5Dclose (dataset_count_id);
+	if (status < 0)
+		log_fatal ("H5Dclose: Error closing dataset '/count'");
+}
+
+void
+h5_write_label_dataset (H5 *h5, const char **label)
+{
+	assert (h5 != NULL);
+	assert (label != NULL && *label != NULL);
+
+	hid_t dataset_label_id;
+	herr_t status;
+
+	char **p = (char **) label;
+
+	dataset_label_id = h5_create_label_dataset (h5->file_id,
+			h5->datatype_str_id, strv_length (p));
+
+	status = H5Dwrite (dataset_label_id, h5->datatype_str_id,
+			H5S_ALL, H5S_ALL, H5P_DEFAULT, label);
 
 	if (status < 0)
 		log_fatal ("H5Dwrite: Error writing to dataset '/label'");
+
+	status = H5Dclose (dataset_label_id);
+	if (status < 0)
+		log_fatal ("H5Dclose: Error closing dataset '/label'");
 }
