@@ -12,6 +12,12 @@
 
 #include "log.h"
 #include "utils.h"
+#include "wrapper.h"
+#include "h5.h"
+#include "strv.h"
+#include "count_table.h"
+#include "count_k_mer.h"
+#include "cmp_k_mer.h"
 #include "test.h"
 
 #define DEFAULT_PREFIX "out"
@@ -25,10 +31,41 @@ struct _Test
 
 typedef struct _Test Test;
 
+static CountKMer *
+retrieve_dataset (const char *file)
+{
+	CountKMer *ck = NULL;
+	H5 *h5 = NULL;
+
+	ck = xcalloc (1, sizeof (CountKMer));
+
+	log_info ("Open HDF5 file '%s'", file);
+	h5 = h5_open (file);
+
+	log_info ("Read count dataset and k-mer length");
+	ck->table = h5_read_count_dataset (h5, &ck->k);
+
+	log_info ("Read label dataset");
+	ck->label = h5_read_label_dataset (h5);
+
+	h5_close (h5);
+
+	return ck;
+}
+
 static void
 run (Test *t)
 {
-	log_warn ("Under construction");
+	CountKMer *ck = NULL;
+
+	log_info ("Retrieve datsets from '%s'", t->h5_file);
+	ck = retrieve_dataset (t->h5_file);
+
+	log_info ("Apply model to each entry at '%s'", t->file);
+	cmp_k_mer (ck, t->file);
+
+	log_info ("FINITO");
+	count_k_mer_free (ck);
 }
 
 static void
