@@ -14,6 +14,7 @@
 #include "log.h"
 #include "utils.h"
 #include "train.h"
+#include "test.h"
 
 static void
 print_version (FILE *fp)
@@ -115,7 +116,7 @@ main (int argc, char *argv[])
 	else if (!strcmp (argv[1], "train"))
 		rc = parse_train_command_opt (argc, argv);
 	else if (!strcmp (argv[1], "test"))
-		printf ("Call 'test' command. Not ready yet!\n");
+		rc = parse_test_command_opt (argc, argv);
 	else
 		{
 			fprintf (stderr, "%s: '%s' is not a valid command\n", PACKAGE, argv[1]);
