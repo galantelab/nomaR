@@ -27,6 +27,8 @@ nomar_sources = files(
   'train.h',
   'utils.c',
   'utils.h',
+  'weight.c',
+  'weight.h',
   'wrapper.c',
   'wrapper.h'
 )
