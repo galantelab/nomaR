@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "train.h"
 #include "test.h"
+#include "fann.h"
 
 static void
 print_version (FILE *fp)
@@ -38,6 +39,7 @@ print_usage (FILE *fp)
 		"Commands:\n"
 		"   train           Train model\n"
 		"   test            Test a model\n"
+		"   fann            Generate FANN input\n"
 		"\n",
 		PACKAGE_STRING, PACKAGE, PACKAGE);
 }
@@ -117,6 +119,8 @@ main (int argc, char *argv[])
 		rc = parse_train_command_opt (argc, argv);
 	else if (!strcmp (argv[1], "test"))
 		rc = parse_test_command_opt (argc, argv);
+	else if (!strcmp (argv[1], "fann"))
+		rc = parse_fann_command_opt (argc, argv);
 	else
 		{
 			fprintf (stderr, "%s: '%s' is not a valid command\n", PACKAGE, argv[1]);
