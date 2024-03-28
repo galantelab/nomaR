@@ -11,35 +11,37 @@
 #include "cmp_k_mer.h"
 
 static inline size_t
-calc_count_n (const CountTable *table, const size_t col)
+calc_idf_nt (const CountTable *table, const size_t col)
 {
-	size_t n = 0;
+	size_t nrows = count_table_get_nrows (table);
 	size_t row = 0;
 
-	for (; row < count_table_get_nrows (table); row++)
-		n += count_table_get (table, row, col) > 0 ? 1 : 0;
+	size_t vet[nrows];
 
-	return n;
+	for (row = 0; row < nrows; row++)
+		vet[row] = count_table_get (table, row, col);
+
+	return idf_nt (vet, nrows);
 }
 
 static inline void
-cmp_process_k_mer (const char *seq, const size_t k, CountTable *table, size_t *count_total)
+cmp_process_k_mer (const char *seq, const size_t k, CountTable *table, double *l2_total)
 {
 	KMerIter iter = {};
 	KMerPos pos = 0;
 	int is_first_k_mer = 1;
 
-	size_t count = 0;
 	size_t row = 0;
-	size_t row_total = 0;
+	size_t nrows = 0;
 	size_t col = 0;
+	size_t count = 0;
 
-	size_t n = 0;
+	size_t nt = 0;
 	double idf_val = 0;
 
 	char k_mer[k + 1];
 
-	row_total = count_table_get_nrows (table);
+	nrows = count_table_get_nrows (table);
 
 	k_mer_iter_init (&iter, seq, k);
 
@@ -50,20 +52,20 @@ cmp_process_k_mer (const char *seq, const size_t k, CountTable *table, size_t *c
 			col = aa_k_mer_get_pos_corrected_index (k_mer, k, pos);
 			count = count_table_get (table, 0, col);
 
-			n = calc_count_n (table, col);
-			idf_val = idf (row_total, n);
+			nt = calc_idf_nt (table, col);
+			idf_val = idf (nrows, nt);
 
 			if (is_first_k_mer)
 				is_first_k_mer = 0;
 			else
 				printf (";");
 
-			printf ("%s:%f", k_mer, tf (count, count_total[0]) * idf_val);
+			printf ("%s:%e", k_mer, (tf (count, count) * idf_val) / l2_total[0]);
 
-			for (row = 1; row < row_total; row++)
+			for (row = 1; row < nrows; row++)
 				{
 					count = count_table_get (table, row, col);
-					printf (",%f", tf (count, count_total[row]) * idf_val);
+					printf (",%e", (tf (count, count) * idf_val) / l2_total[row]);
 				}
 		}
 }
@@ -94,6 +96,22 @@ calc_count_total (const CountTable *table, size_t *count_total)
 			count_total[i] += count_table_get (table, i, j);
 }
 
+static inline void
+calc_l2_space (const CountTable *table, double *l2_total)
+{
+	size_t *data = NULL;
+	size_t dim[2] = {};
+	size_t i = 0;
+
+	data = count_table_data (table);
+	count_table_get_dim (table, dim);
+
+	memset (l2_total, 0, sizeof (double) * dim[0]);
+
+	for (i = 0; i < dim[0]; i++)
+		l2_total[i] = l2_space (&data[i * dim[1]], dim[1]);
+}
+
 void
 cmp_k_mer (const CountKMer *ck, const char *file)
 {
@@ -103,8 +121,11 @@ cmp_k_mer (const CountKMer *ck, const char *file)
 	AAFile *aa_file = NULL;
 	AAFileEntry *entry = NULL;
 
-	size_t count_total[count_table_get_nrows (ck->table)];
-	calc_count_total (ck->table, count_total);
+	/*size_t count_total[count_table_get_nrows (ck->table)];*/
+	/*calc_count_total (ck->table, count_total);*/
+
+	double l2_total[count_table_get_nrows (ck->table)];
+	calc_l2_space (ck->table, l2_total);
 
 	print_header (ck->label);
 
@@ -133,7 +154,7 @@ cmp_k_mer (const CountKMer *ck, const char *file)
 
 			printf ("%s\t%s", entry->class, entry->seq);
 
-			cmp_process_k_mer (entry->seq, ck->k, ck->table, count_total);
+			cmp_process_k_mer (entry->seq, ck->k, ck->table, l2_total);
 
 			printf ("\n");
 		}
